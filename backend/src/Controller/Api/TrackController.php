@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Controller\Api;
+
+use App\Entity\Track;
+use App\Form\TrackType;
+use App\Repository\TrackRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
+
+#[Route('/api/tracks')]
+class TrackController extends AbstractController
+{
+    public function __construct(
+        private TrackRepository $trackRepository
+    ){
+    }
+
+    #[Route('', name: 'track_index', methods: ['GET'])]
+    public function index(): JsonResponse
+    {
+        $tracks = $this->trackRepository->findAll();
+        $data = array_map(function (Track $track) {
+            return [
+                'id' => $track->getId(),
+                'title' => $track->getTitle(),
+                'artist' => $track->getArtist(),
+                'duration' => $track->getDuration(),
+                'isrc' => $track->getIsrc(),
+            ];
+        }, $tracks);
+        return new JsonResponse($data, 200);
+    }
+
+    #[Route('', name: 'track_create', methods: ['POST'])]
+    public function create(Request $request): JsonResponse
+    {
+        $track = new Track();
+        $form = $this->createForm(TrackType::class, $track);
+        $form->submit($request->getContent() ? json_decode($request->getContent(), true) : []);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->trackRepository->save($track, true);
+            return new JsonResponse([
+                'id' => $track->getId(),
+                'title' => $track->getTitle(),
+                'artist' => $track->getArtist(),
+                'duration' => $track->getDuration(),
+                'isrc' => $track->getIsrc(),
+            ], 201);
+        }
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[$error->getOrigin()->getName()][] = $error->getMessage();
+        }
+        return new JsonResponse($errors, 400);
+    }
+
+    #[Route('/{id}', name: 'track_update', methods: ['PUT'])]
+    public function update(Request $request, Track $track): JsonResponse
+    {
+        $form = $this->createForm(TrackType::class, $track);
+        $form->submit($request->getContent() ? json_decode($request->getContent(), true) : []);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->trackRepository->save($track, true);
+            return new JsonResponse([
+                'id' => $track->getId(),
+                'title' => $track->getTitle(),
+                'artist' => $track->getArtist(),
+                'duration' => $track->getDuration(),
+                'isrc' => $track->getIsrc(),
+            ], 200);
+        }
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[$error->getOrigin()->getName()][] = $error->getMessage();
+        }
+        return new JsonResponse($errors, 400);
+    }
+}

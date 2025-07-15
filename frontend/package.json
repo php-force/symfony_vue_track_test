@@ -1,0 +1,17 @@
+{
+  "name": "track-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "axios": "^1.6.0",
+    "pinia": "^2.3.1",
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.4"
+  }
+}
