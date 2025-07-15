@@ -19,18 +19,21 @@ class TrackService
 
     public function getAllTracks(): array
     {
-        return $this->trackRepository->findAll();
+        $tracks = $this->trackRepository->findAll();
+        return array_map(function (Track $track) {
+            return [
+                'id' => $track->getId(),
+                'title' => $track->getTitle(),
+                'artist' => $track->getArtist(),
+                'duration' => $track->getDuration(),
+                'isrc' => $track->getIsrc(),
+            ];
+        }, $tracks);
     }
 
-    public function createTrack(Track $track): Track
+    public function saveTrack(Track $track): Track
     {
         $this->entityManager->persist($track);
-        $this->entityManager->flush();
-        return $track;
-    }
-
-    public function updateTrack(Track $track): Track
-    {
         $this->entityManager->flush();
         return $track;
     }

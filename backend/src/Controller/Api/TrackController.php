@@ -4,7 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Track;
 use App\Form\TrackType;
-use App\Repository\TrackRepository;
+use App\Service\TrackService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,24 +14,15 @@ use Symfony\Component\Routing\Annotation\Route;
 class TrackController extends AbstractController
 {
     public function __construct(
-        private TrackRepository $trackRepository
+        private TrackService $trackService
     ){
     }
 
     #[Route('', name: 'track_index', methods: ['GET'])]
     public function index(): JsonResponse
     {
-        $tracks = $this->trackRepository->findAll();
-        $data = array_map(function (Track $track) {
-            return [
-                'id' => $track->getId(),
-                'title' => $track->getTitle(),
-                'artist' => $track->getArtist(),
-                'duration' => $track->getDuration(),
-                'isrc' => $track->getIsrc(),
-            ];
-        }, $tracks);
-        return new JsonResponse($data, 200);
+        $tracks = $this->trackService->getAllTracks();
+        return new JsonResponse($tracks, 200);
     }
 
     #[Route('', name: 'track_create', methods: ['POST'])]
@@ -41,14 +32,14 @@ class TrackController extends AbstractController
         $form = $this->createForm(TrackType::class, $track);
         $form->submit($request->getContent() ? json_decode($request->getContent(), true) : []);
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->trackRepository->save($track, true);
+            $track = $this->trackService->saveTrack($track);
             return new JsonResponse([
                 'id' => $track->getId(),
                 'title' => $track->getTitle(),
                 'artist' => $track->getArtist(),
                 'duration' => $track->getDuration(),
                 'isrc' => $track->getIsrc(),
-            ], 201);
+            ], 201); // 201 Created to indicate a new track was successfully created
         }
         $errors = [];
         foreach ($form->getErrors(true) as $error) {
@@ -63,7 +54,7 @@ class TrackController extends AbstractController
         $form = $this->createForm(TrackType::class, $track);
         $form->submit($request->getContent() ? json_decode($request->getContent(), true) : []);
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->trackRepository->save($track, true);
+            $track = $this->trackService->saveTrack($track);
             return new JsonResponse([
                 'id' => $track->getId(),
                 'title' => $track->getTitle(),

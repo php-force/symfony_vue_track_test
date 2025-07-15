@@ -12,12 +12,4 @@ class TrackRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Track::class);
     }
-
-    public function save(Track $track, bool $flush = false): void
-    {
-        $this->getEntityManager()->persist($track);
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
 }
